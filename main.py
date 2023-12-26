@@ -19,7 +19,7 @@ map_p1 = Map()
 # Load music file
 music_file = "tracks/DEAF KEV - Invincible [NCS Release].mp3"
 pygame.mixer.music.load(music_file)
-bpm = 100
+bpm = 50
 
 # loading images
 image_paths = [f"./images/{knot.name}.png" for knot in KNOTS]
