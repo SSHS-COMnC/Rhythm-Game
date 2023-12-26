@@ -70,6 +70,9 @@ class Map:
         self.ignore_input_counts: List[int] = []
         self.input_count = 0
         self.combo_check: Dict[int, List[int]] = {}
+        self.marks = []
+        
+        
     
     def pick(self):
         val = pick_random_at(self.count)
@@ -213,3 +216,5 @@ class Map:
         print(self.deck)
 
         print("----------\n\n")
+        
+    

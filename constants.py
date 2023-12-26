@@ -1,7 +1,7 @@
 import random
 from typing import List, Tuple
 
-SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 500
 
 RHYTHM_GRID = 24
 
@@ -40,8 +40,8 @@ RATING_RULE = [1/8, 1/6, 1/4]
 RATING_COUNTS = 3
 assert RATING_COUNTS == len(RATINGS)
 
-DECK_SIZE = 4
-NEXT_SIZE = 5
+DECK_SIZE = 3
+NEXT_SIZE = 4
 
 KEY_COUNTS = 4
 
