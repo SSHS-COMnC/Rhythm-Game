@@ -100,7 +100,10 @@ class Map:
     def kill(self, rope: Rope, in_open: bool = True, break_combo: bool = True):
         if in_open:
             self.open.remove(rope)
-        self.alive.remove(rope)
+        try:
+            self.alive.remove(rope)
+        except ValueError:
+            pass
         for input_count in rope.input_counts:
             if input_count in self.combo_check:
                 self.combo_check[input_count][rope.rating] -= 1

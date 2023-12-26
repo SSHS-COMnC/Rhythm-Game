@@ -27,9 +27,22 @@ image_dict = {knot.name: pygame.image.load(image_path).convert_alpha() for knot,
 
 font = pygame.font.Font(None, 36)
 
+
+# Rectangle parameters
+rectangle_width = 680
+rectangle_height = 270
+rectangle_x = 40
+rectangle_y = 120
+border_thickness = 2
+
+line_x = 100  
+line_length = rectangle_height
+
+
 TIMER_EVENT = pygame.USEREVENT + 1
 
 beat_interval = 60 / bpm
+
 
 # Play the music
 pygame.mixer.music.play()
@@ -66,10 +79,28 @@ while True:
             if event.key in [pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_f]:
                 print(time_current)
                 map_p1.on_input_at(time_current, key_to_no(event.key))
+                map_p1.marks.append((line_x, rectangle_x + rectangle_width // 2))
 
 
     # draw background
     screen.fill((255, 255, 255))
+    
+    # Draw bordered rectangle
+    pygame.draw.rect(screen, (0, 0, 0), (rectangle_x, rectangle_y, rectangle_width, rectangle_height), border_thickness)
+    
+    # Calculate line position within the rectangle
+    line_progress = time_current - int(time_current)
+    line_x = rectangle_x + line_progress * rectangle_width
+    
+    # Draw the line
+    pygame.draw.line(screen, (0, 0, 0), (line_x, rectangle_y), (line_x, rectangle_y + line_length), 2)  # Draw a line within the rectangle
+
+    # Draw marks
+    for mark in map_p1.marks:
+        pygame.draw.circle(screen, (0, 0, 0), (mark[0], mark[1]), 5)  # Draw a small circle at the mark position
+        
+    if line_progress > 0.95:
+        map_p1.marks = []
     
     # Render text surface
     text_surface = font.render("DECK", True, (0, 0, 0))
@@ -86,9 +117,9 @@ while True:
     for idx, knot in enumerate(map_p1.nexts):
         screen.blit(image_dict[knot.name], (idx * 200, 0))
         
-        
-    # draw the moving line
-    pygame.draw.rect(screen, (0, 0, 0), (40, 120, 680, 270), 3)
+    # draw combo text
+    text_surface = font.render(f"{RATINGS[map_p1.combo_rating]}  X {map_p1.combo_count}", True, (0, 0, 0))
+    screen.blit(text_surface, (50, 420)) if map_p1.combo_count > 0 else None
     
     # Update the display
     pygame.display.flip()
