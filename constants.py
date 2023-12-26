@@ -54,6 +54,8 @@ def random_pattern_picker():
 
 RANDOM_PATTERN_PICKER = random_pattern_picker()
 
+IS_INPUT_DEVICE_MIDI = True
+
 def pick_random_at(n, info={}):
     if n in info:
         return info[n]
