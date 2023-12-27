@@ -26,6 +26,15 @@ bpm = 50
 # loading images
 image_paths = [f"./images/{knot.name}.png" for knot in KNOTS]
 image_dict = {knot.name: pygame.image.load(image_path).convert_alpha() for knot, image_path in zip(KNOTS, image_paths)}
+image_dict = {knot: pygame.transform.scale(image, (105, 90)) for knot, image in image_dict.items()}
+frame_image = pygame.image.load("./images/frame.png").convert_alpha()
+frame3_image = pygame.image.load("./images/frame2.png").convert_alpha()
+frame1_image = pygame.transform.scale(frame_image, (130, 330))
+frame2_image = pygame.transform.scale(frame3_image, (850, 100))
+frame3_image = pygame.transform.scale(frame3_image, (680, 270))
+bg_image = pygame.image.load("./images/background.png").convert_alpha()
+bg_image = pygame.transform.scale(bg_image, (1000, 500))
+
 
 font = pygame.font.Font(None, 36)
 
@@ -33,8 +42,8 @@ font = pygame.font.Font(None, 36)
 # Rectangle parameters
 rectangle_width = 680
 rectangle_height = 270
-rectangle_x = 40
-rectangle_y = 120
+rectangle_x = 120
+rectangle_y = 160
 border_thickness = 2
 
 line_x = 100  
@@ -57,7 +66,7 @@ pygame.mixer.music.play()
 clock = pygame.time.Clock()
 fps = 60
 
-latency = 0 # 레이턴시, ms 단위
+latency = 400 # 레이턴시, ms 단위
 
 time_initial = time.time() + latency / 1000
 
@@ -124,10 +133,10 @@ while True:
 
 
     # draw background
-    screen.fill((255, 255, 255))
+    screen.blit(bg_image, (0, 0))
     
     # Draw bordered rectangle
-    pygame.draw.rect(screen, (0, 0, 0), (rectangle_x, rectangle_y, rectangle_width, rectangle_height), border_thickness)
+    screen.blit(frame3_image, (rectangle_x, rectangle_y))
     # draw a vertical line in side the bordered rectangle, at positions of 1/8, 3/8, 5/8, 7/8
     for i in range(1, 8, 2):
         pygame.draw.line(screen, (0, 0, 0), (rectangle_x + rectangle_width * i // 8, rectangle_y), (rectangle_x + rectangle_width * i // 8, rectangle_y + rectangle_height), 1)
@@ -141,24 +150,26 @@ while True:
 
     
     # Render text surface
-    text_surface = font.render("DECK", True, (0, 0, 0))
+    # text_surface = font.render("DECK", True, (0, 0, 0))
     
     # Blit text onto the screen
-    screen.blit(text_surface, (850, 20))
+    # screen.blit(text_surface, (850, 20))
     
     # draw deck images
-    pygame.draw.rect(screen, (0, 0 ,0), (800, 50, 175, 420), 3)
+    screen.blit(frame1_image, (850, 150))
+    # pygame.draw.rect(screen, (0, 0 ,0), (800, 50, 175, 420), 3)
     for idx, knot in enumerate(map_p1.deck):
-        screen.blit(image_dict[knot.name], (830, 70+idx * 130))
+        screen.blit(image_dict[knot.name], (860, 170+idx * 100))
             
     # draw next images
+    screen.blit(frame2_image, (120, 40))
     for idx, knot in enumerate(map_p1.nexts):
-        screen.blit(image_dict[knot.name], (idx * 200, 0))
+        screen.blit(image_dict[knot.name], (idx * 200 + 170, 43))
         
     # draw combo text
     if map_p1.combo_count  != temp_combo_count:
         if map_p1.combo_count > 0:
-            combo_texts.append(ComboText(320,420, f"{RATINGS[map_p1.combo_rating]}  X {map_p1.combo_count}"))
+            combo_texts.append(ComboText(450,450, f"{RATINGS[map_p1.combo_rating]}  X {map_p1.combo_count}"))
     for combo_text in combo_texts:
         combo_text.update()
         combo_text.draw(screen)
@@ -172,23 +183,23 @@ while True:
         shiny_elapsed_time = time.time() - shiny_effect_start_time
         
         if shiny_elapsed_time < shiny_effect_duration:
-            pygame.draw.line(screen, (0, 255, 0), (line_x, rectangle_y), (line_x , rectangle_y + line_length), 5)  # Flashing effect
+            pygame.draw.line(screen,(72, 209, 204), (line_x, rectangle_y), (line_x , rectangle_y + line_length), 5)  # Flashing effect
             shiny_progress = shiny_elapsed_time / shiny_effect_duration
             for i in range(10):
                 shiny_alpha = int((1 - shiny_progress) * 255 * (10 - i) * 0.1)
                 vertical_line = pygame.Surface((5, line_length), pygame.SRCALPHA)
-                vertical_line.fill((0, 255, 0, shiny_alpha))
+                vertical_line.fill((72,209,204, shiny_alpha))
                 screen.blit(vertical_line, (line_x + i * 3, rectangle_y))
                 vertical_line2 = pygame.Surface((5, line_length), pygame.SRCALPHA)
-                vertical_line2.fill((0, 255, 0, shiny_alpha))
+                vertical_line2.fill((72,209,204, shiny_alpha))
                 screen.blit(vertical_line2, (line_x - i * 3, rectangle_y))
         else:
             shiny_effect_active = False
             
     # Update and draw marks with particles
-    for mark in map_p1.marks:
-        mark.update_particles()
-        mark.draw_particles(screen)
+    # for mark in map_p1.marks:
+    #     mark.update_particles()
+    #     mark.draw_particles(screen)
     
     # Update the display
     pygame.display.flip()

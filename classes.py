@@ -290,7 +290,7 @@ class ComboText:
 
     def draw(self, screen):
         font = pygame.font.Font(None, int(self.size))
-        text_surface = font.render(self.combo_text, True, (72, 209, 204))
+        text_surface = font.render(self.combo_text, True, (255, 105, 180)) # neon pink
         text_rect = text_surface.get_rect()
         text_rect.center = (self.x, self.y)
         screen.blit(text_surface, text_rect)
