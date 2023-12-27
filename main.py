@@ -1,7 +1,9 @@
 import pygame
+import pygame.midi
 import time
 from constants import *
-from classes import *
+from classes import Map
+from midi import _print_device_info
 
 # Initialize Pygame
 pygame.init()
@@ -62,18 +64,41 @@ time_initial = time.time() + latency / 1000
 
 print(map_p1.deck)
 
-def key_to_no(key):
-    if key == pygame.K_a:
-        return 1
-    elif key == pygame.K_s:
-        return 2
-    elif key == pygame.K_d:
-        return 3
-    elif key == pygame.K_f:
-        return 4
+def key_to_no(event):
+    if IS_INPUT_DEVICE_MIDI:
+        if event.status == 145:
+            keys = [41, 43, 45, 47]
+            if event.data1 not in keys:
+                return False, None
+            else:
+                return True, 1 + keys.index(event.data1)
+        else:
+            return False, None
+    else:
+        key = event.key
+        if key == pygame.K_a:
+            return True, 1
+        elif key == pygame.K_s:
+            return True, 2
+        elif key == pygame.K_d:
+            return True, 3
+        elif key == pygame.K_f:
+            return True, 4
+        else:
+            return False, None
 
-temp_combo_count = 0
-combo_texts = []
+if IS_INPUT_DEVICE_MIDI:
+    pygame.fastevent.init()
+    event_get = pygame.fastevent.get
+    event_post = pygame.fastevent.post
+    pygame.midi.init()
+    _print_device_info()
+
+input_id = pygame.midi.get_default_input_id()
+
+print("using input_id :%s:" % input_id)
+midi_input = pygame.midi.Input(input_id)
+input_event_type = pygame.midi.MIDIIN if IS_INPUT_DEVICE_MIDI else pygame.KEYDOWN
 
 # Main loop (to keep the program running while the music plays)
 while True:
@@ -83,15 +108,12 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-        if event.type == pygame.KEYDOWN:
-            if event.key in [pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_f]:
+        if event.type == input_event_type:
+            appropriate, key_no = key_to_no(event)
+            if appropriate:
                 print(time_current)
-                map_p1.on_input_at(time_current, key_to_no(event.key))
-                mark = Mark(line_x, rectangle_y + rectangle_height // 2, (0, 255, 0))
-                mark.create_particles()
-                map_p1.marks.append(mark)
-                shiny_effect_active = True
-                shiny_effect_start_time = time.time()
+                map_p1.on_input_at(time_current, key_no)
+                map_p1.marks.append((line_x, rectangle_x + rectangle_width // 2))
 
 
     # draw background
@@ -166,3 +188,14 @@ while True:
 
     # Control the frame rate
     clock.tick(fps)
+
+    if midi_input.poll():
+            midi_events = midi_input.read(10)
+            # convert them into pygame events.
+            midi_evs = pygame.midi.midis2events(midi_events, midi_input.device_id)
+
+            for m_e in midi_evs:
+                event_post(m_e)
+
+del midi_input
+pygame.midi.quit()
