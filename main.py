@@ -1,7 +1,7 @@
 import pygame
 import time
 from constants import *
-from classes import Map
+from classes import *
 
 # Initialize Pygame
 pygame.init()
@@ -38,6 +38,11 @@ border_thickness = 2
 line_x = 100  
 line_length = rectangle_height
 
+# Shiny effect parameters
+shiny_effect_duration = 0.2  # Duration of the shiny effect in seconds
+shiny_effect_start_time = 0
+shiny_effect_active = False
+
 
 TIMER_EVENT = pygame.USEREVENT + 1
 
@@ -67,6 +72,9 @@ def key_to_no(key):
     elif key == pygame.K_f:
         return 4
 
+temp_combo_count = 0
+combo_texts = []
+
 # Main loop (to keep the program running while the music plays)
 while True:
     time_current = (time.time() - time_initial)/beat_interval
@@ -79,7 +87,11 @@ while True:
             if event.key in [pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_f]:
                 print(time_current)
                 map_p1.on_input_at(time_current, key_to_no(event.key))
-                map_p1.marks.append((line_x, rectangle_x + rectangle_width // 2))
+                mark = Mark(line_x, rectangle_y + rectangle_height // 2, (0, 255, 0))
+                mark.create_particles()
+                map_p1.marks.append(mark)
+                shiny_effect_active = True
+                shiny_effect_start_time = time.time()
 
 
     # draw background
@@ -87,6 +99,9 @@ while True:
     
     # Draw bordered rectangle
     pygame.draw.rect(screen, (0, 0, 0), (rectangle_x, rectangle_y, rectangle_width, rectangle_height), border_thickness)
+    # draw a vertical line in side the bordered rectangle, at positions of 1/8, 3/8, 5/8, 7/8
+    for i in range(1, 8, 2):
+        pygame.draw.line(screen, (0, 0, 0), (rectangle_x + rectangle_width * i // 8, rectangle_y), (rectangle_x + rectangle_width * i // 8, rectangle_y + rectangle_height), 1)
     
     # Calculate line position within the rectangle
     line_progress = time_current - int(time_current)
@@ -95,12 +110,6 @@ while True:
     # Draw the line
     pygame.draw.line(screen, (0, 0, 0), (line_x, rectangle_y), (line_x, rectangle_y + line_length), 2)  # Draw a line within the rectangle
 
-    # Draw marks
-    for mark in map_p1.marks:
-        pygame.draw.circle(screen, (0, 0, 0), (mark[0], mark[1]), 5)  # Draw a small circle at the mark position
-        
-    if line_progress > 0.95:
-        map_p1.marks = []
     
     # Render text surface
     text_surface = font.render("DECK", True, (0, 0, 0))
@@ -118,8 +127,39 @@ while True:
         screen.blit(image_dict[knot.name], (idx * 200, 0))
         
     # draw combo text
-    text_surface = font.render(f"{RATINGS[map_p1.combo_rating]}  X {map_p1.combo_count}", True, (0, 0, 0))
-    screen.blit(text_surface, (50, 420)) if map_p1.combo_count > 0 else None
+    if map_p1.combo_count  != temp_combo_count:
+        if map_p1.combo_count > 0:
+            combo_texts.append(ComboText(320,420, f"{RATINGS[map_p1.combo_rating]}  X {map_p1.combo_count}"))
+    for combo_text in combo_texts:
+        combo_text.update()
+        combo_text.draw(screen)
+
+        if combo_text.timer <= 0:
+            combo_texts.remove(combo_text)
+    temp_combo_count = map_p1.combo_count
+    
+    # Shiny effect
+    if shiny_effect_active:
+        shiny_elapsed_time = time.time() - shiny_effect_start_time
+        
+        if shiny_elapsed_time < shiny_effect_duration:
+            pygame.draw.line(screen, (0, 255, 0), (line_x, rectangle_y), (line_x , rectangle_y + line_length), 5)  # Flashing effect
+            shiny_progress = shiny_elapsed_time / shiny_effect_duration
+            for i in range(10):
+                shiny_alpha = int((1 - shiny_progress) * 255 * (10 - i) * 0.1)
+                vertical_line = pygame.Surface((5, line_length), pygame.SRCALPHA)
+                vertical_line.fill((0, 255, 0, shiny_alpha))
+                screen.blit(vertical_line, (line_x + i * 3, rectangle_y))
+                vertical_line2 = pygame.Surface((5, line_length), pygame.SRCALPHA)
+                vertical_line2.fill((0, 255, 0, shiny_alpha))
+                screen.blit(vertical_line2, (line_x - i * 3, rectangle_y))
+        else:
+            shiny_effect_active = False
+            
+    # Update and draw marks with particles
+    for mark in map_p1.marks:
+        mark.update_particles()
+        mark.draw_particles(screen)
     
     # Update the display
     pygame.display.flip()

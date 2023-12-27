@@ -1,6 +1,7 @@
 from constants import *
 from typing import Set, List, Dict
 import math
+import pygame
 
 class Rope: # Knot가 될 수도 있는 무언가
     def __init__(self, start: int, knot: Knot, length: int, rating: int, input_count: int, key_no: int):
@@ -221,3 +222,75 @@ class Map:
         print("----------\n\n")
         
     
+
+class Particle:
+    def __init__(self, x, y, color):
+        self.x = x
+        self.y = y
+        self.color = color
+        self.radius = random.randint(2, 5)
+        self.velocity = random.uniform(3, 7) * 0.3
+        self.angle = random.uniform(0, 2 * math.pi)
+        self.acceleration = -0.05  # Deceleration rate
+        self.alpha = 255
+        self.life = 0.4
+
+    def update(self):
+        self.velocity += self.acceleration
+        self.x += self.velocity * math.cos(self.angle)
+        self.y += self.velocity * math.sin(self.angle)
+        self.alpha -= int(255 * (1 / (60 * self.life)))
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, (self.color[0], self.color[1], self.color[2], self.alpha), (int(self.x), int(self.y)), self.radius)
+
+
+
+class Mark:
+    def __init__(self, x, y, color):
+        self.x = x
+        self.y = y
+        self.color = color
+        self.particles = []
+
+    def update_particles(self):
+        for particle in self.particles:
+            particle.update()
+            if particle.alpha <= 0:
+                self.particles.remove(particle)
+
+    def draw_particles(self, screen):
+        for particle in self.particles:
+            particle.draw(screen)
+
+    def create_particles(self):
+        for _ in range(20):
+            particle = Particle(self.x, self.y, self.color)
+            self.particles.append(particle)
+            
+            
+# ComboText class
+class ComboText:
+    def __init__(self, x, y, combo_text):
+        self.x = x
+        self.y = y
+        self.combo_text = combo_text
+        self.font = pygame.font.Font(None, 36)
+        self.size = 25
+        self.velocity = 2
+        self.acceleration = -0.08
+        self.timer = 30  # Frames before disappearing
+
+    def update(self):
+        self.size += self.velocity
+        self.velocity += self.acceleration
+
+
+        self.timer -= 1
+
+    def draw(self, screen):
+        font = pygame.font.Font(None, int(self.size))
+        text_surface = font.render(self.combo_text, True, (72, 209, 204))
+        text_rect = text_surface.get_rect()
+        text_rect.center = (self.x, self.y)
+        screen.blit(text_surface, text_rect)
