@@ -27,11 +27,12 @@ bpm = 50
 image_paths = [f"./images/{knot.name}.png" for knot in KNOTS]
 image_dict = {knot.name: pygame.image.load(image_path).convert_alpha() for knot, image_path in zip(KNOTS, image_paths)}
 image_dict = {knot: pygame.transform.scale(image, (105, 90)) for knot, image in image_dict.items()}
-frame_image = pygame.image.load("./images/frame.png").convert_alpha()
-frame3_image = pygame.image.load("./images/frame2.png").convert_alpha()
-frame1_image = pygame.transform.scale(frame_image, (130, 330))
-frame2_image = pygame.transform.scale(frame3_image, (850, 100))
-frame3_image = pygame.transform.scale(frame3_image, (680, 270))
+frame1_image = pygame.image.load("./images/frame1.png").convert_alpha()
+frame2_image = pygame.image.load("./images/frame2.png").convert_alpha()
+frame3_image = pygame.image.load("./images/frame3.png").convert_alpha()
+frame1_image = pygame.transform.scale(frame3_image, (130, 330))
+frame2_image = pygame.transform.scale(frame1_image, (850, 100))
+frame3_image = pygame.transform.scale(frame2_image, (680, 270))
 bg_image = pygame.image.load("./images/background.png").convert_alpha()
 bg_image = pygame.transform.scale(bg_image, (1000, 500))
 
