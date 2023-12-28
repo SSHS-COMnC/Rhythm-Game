@@ -34,6 +34,8 @@ frame2_image = pygame.transform.scale(frame3_image, (850, 100))
 frame3_image = pygame.transform.scale(frame3_image, (680, 270))
 bg_image = pygame.image.load("./images/background.png").convert_alpha()
 bg_image = pygame.transform.scale(bg_image, (1000, 500))
+heart_image = pygame.image.load("./images/heart.png").convert_alpha()
+heart_image = pygame.transform.scale(heart_image, (50, 50))
 
 
 font = pygame.font.Font(None, 36)
@@ -66,7 +68,7 @@ pygame.mixer.music.play()
 clock = pygame.time.Clock()
 fps = 60
 
-latency = 400 # 레이턴시, ms 단위
+latency = 0 # 레이턴시, ms 단위
 
 time_initial = time.time() + latency / 1000
 
@@ -76,11 +78,14 @@ print(map_p1.deck)
 def key_to_no(event):
     if IS_INPUT_DEVICE_MIDI:
         if event.status == 145:
-            keys = [41, 43, 45, 47]
-            if event.data1 not in keys:
-                return False, None
+            keys_left = [41, 43, 45, 47]
+            keys_right = [59, 57, 55, 53]
+            if event.data1 in keys_left:
+                return True, 1 + keys_left.index(event.data1)
+            elif event.data1 in keys_right:
+                return True, 1 + keys_right.index(event.data1)
             else:
-                return True, 1 + keys.index(event.data1)
+                return False, None
         else:
             return False, None
     else:
@@ -119,6 +124,9 @@ while True:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            if IS_INPUT_DEVICE_MIDI:
+                del midi_input
+                pygame.midi.quit()
             pygame.quit()
         if event.type == input_event_type:
             appropriate, key_no = key_to_no(event)
@@ -134,6 +142,7 @@ while True:
 
     # draw background
     screen.blit(bg_image, (0, 0))
+    
     
     # Draw bordered rectangle
     screen.blit(frame3_image, (rectangle_x, rectangle_y))
@@ -170,6 +179,8 @@ while True:
     if map_p1.combo_count  != temp_combo_count:
         if map_p1.combo_count > 0:
             combo_texts.append(ComboText(450,450, f"{RATINGS[map_p1.combo_rating]}  X {map_p1.combo_count}"))
+            map_p1.score += DAMAGE_RATE[map_p1.combo_rating] * min(map_p1.combo_count, COMBO_BONUS_LIMIT)
+
     for combo_text in combo_texts:
         combo_text.update()
         combo_text.draw(screen)
@@ -196,6 +207,13 @@ while True:
         else:
             shiny_effect_active = False
             
+    # draw health bar
+    screen.blit(heart_image, (20, 420))
+    
+    # draw score
+    score_surface = font.render(f"Score: {map_p1.score}", True, (255, 105, 180))
+    screen.blit(score_surface, (20, 30))
+            
     # Update and draw marks with particles
     # for mark in map_p1.marks:
     #     mark.update_particles()
@@ -215,6 +233,3 @@ while True:
 
             for m_e in midi_evs:
                 event_post(m_e)
-
-del midi_input
-pygame.midi.quit()

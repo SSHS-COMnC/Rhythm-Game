@@ -43,7 +43,7 @@ RATING: {RATINGS[self.rating]}
                 if self.count == 1:
                     my_keys = {self.key_nos[0] - 1, self.key_nos[0] + 1}
                 else:
-                    my_keys = 2 * self.key_nos[-1] - self.key_nos[-2]
+                    my_keys = {2 * self.key_nos[-1] - self.key_nos[-2]}
                 return list(my_keys & set(all_keys))
             case "trill":
                 if self.count == 1:
@@ -73,6 +73,7 @@ class Map:
         self.combo_check: Dict[int, List[int]] = {}
         self.marks = []
         
+        self.score = 0
         
     
     def pick(self):
